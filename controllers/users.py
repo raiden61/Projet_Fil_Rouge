@@ -99,6 +99,18 @@ class users_Controller():
                 finally:
                     cursor.close()
                     conn.close()
+            elif request.method == 'PUT':
+                try:
+                    data = request.get_json()
+                    users_selected = Users.from_map(data)
+                    cursor.execute("UPDATE users SET username = %s, password = %s, mail = %s, first_name = %s, last_name = %s WHERE username = %s", (users_selected.username, users_selected.password, users_selected.email, users_selected.first_name, users_selected.last_name, users,))
+                    conn.commit()
+                    return jsonify(users_selected.to_map()), 200
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+                finally:
+                    cursor.close()
+                    conn.close()
 
 
                 
