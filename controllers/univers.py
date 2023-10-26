@@ -4,11 +4,13 @@ import mysql.connector # pip install mysql-connector-python
 from dotenv import load_dotenv  # Ajout de cette ligne
 from classes.universes import Univers
 from classes.verifToken import verify_token
-
+import jwt
 import os
 
 
 load_dotenv()
+
+secret_key = os.getenv("SECRET_KEY")
 
 # Connectez-vous à la base de données
 def get_database_cursor():
@@ -34,16 +36,20 @@ class Univers_Controller():
         elif verify_token(request.headers.get('Token')) == 505:
             return jsonify({'error': 'Token expiré'}), 505
         else:
-            if request.method == 'GET':
 
+            user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
+            cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
+            user_id = cursor.fetchone()
+
+            if request.method == 'GET':
                 try:
-                    query = "SELECT * FROM univers"
-                    cursor.execute(query)
+                    
+                    cursor.execute("SELECT * FROM univers WHERE user_id = %s", (user_id[0],))
                     rows = cursor.fetchall()
 
                     universes = []
                     for row in rows:
-                        universe_temp = Univers.from_map({'id': row[0], 'name': row[1], 'description': row[2]})
+                        universe_temp = Univers.from_map({'id': row[0], 'name': row[1], 'description': row[2], 'user_id': row[3]})
                         universes.append(universe_temp.to_map())
 
                     return jsonify(universes), 200
@@ -58,9 +64,10 @@ class Univers_Controller():
                 universe = Univers.from_map(data)
                 universe.generate_description()
                 try:
-                    cursor.execute("INSERT INTO univers (name, description) VALUES (%s, %s)", (data['name'], universe.description,)) # Insert the universe name into the database
+
+                    cursor.execute("INSERT INTO univers (name, description, user_id) VALUES (%s, %s, %s)", (data['name'], universe.description, user_id[0],)) # Insert the universe name into the database
                     conn.commit() # Commit the changes to the database
-                    return jsonify({'message': f'Univers {data["name"]} créé avec succès!'}), 201
+                    return jsonify({'message': f'Univers {data["name"]} créé avec succès! sur votre compte {user["username"]} {user_id[0]}'}), 201
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
                 finally:
@@ -76,9 +83,14 @@ class Univers_Controller():
         elif verify_token(request.headers.get('Token')) == 505:
             return jsonify({'error': 'Token expiré'}), 505
         else:
+
+            user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
+            cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
+            user_id = cursor.fetchone()
+
             if request.method == 'GET':
                 try:
-                    cursor.execute("SELECT * FROM univers WHERE name = %s", (univers,))
+                    cursor.execute("SELECT * FROM univers WHERE name = %s AND user_id = %s", (univers, user_id[0],))
                     rows = cursor.fetchall()
 
                     if not rows:
@@ -107,7 +119,7 @@ class Univers_Controller():
                     data = request.json
 
                     # Fetch the universe ID from the database using the name
-                    cursor.execute("SELECT * FROM univers WHERE name = %s", (univers,))
+                    cursor.execute("SELECT * FROM univers WHERE name = %s AND user_id = %s", (univers,user_id[0],))
                     row = cursor.fetchone()
 
                     if row is not None:
