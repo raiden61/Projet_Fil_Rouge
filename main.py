@@ -36,7 +36,11 @@ class Test(Univers_Controller):
     
 
     # Définition des routes pour les personnages
-    @app.route('/univers/<string:univers>/personnages', methods=['GET', 'POST', 'PUT', 'DELETE'])
+    @app.route('/univers/<string:univers>/personnages', methods=['GET', 'POST'])
     def handle_personnages(univers):
         return Personnages_Controller.PersonnagesMethod(univers)
+    
+    @app.route('/univers/<string:univers>/personnages/<string:perso>', methods=['GET', 'PUT', 'DELETE'])
+    def handle_personnagesSpecifique(univers, perso):
+        return Personnages_Controller.PersonnagesMethodSpecifique(univers, perso)
     

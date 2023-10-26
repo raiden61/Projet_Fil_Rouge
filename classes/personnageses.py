@@ -4,6 +4,7 @@ class Personnage:
         self.name = name
         self.description = None
         self.univers_id = None
+        self.user_id = None
 
     def to_map(self):
         return {
@@ -11,6 +12,7 @@ class Personnage:
             'name': self.name,
             #'description': self.description
             'univers_id': self.univers_id,
+            'user_id': self.user_id,
         }
 
     @classmethod
@@ -19,6 +21,7 @@ class Personnage:
         personnage.id = map.get('id')
         personnage.description = map.get('description')
         personnage.univers_id = map.get('univers_id')
+        personnage.user_id = map.get('user_id')
 
         return personnage
 

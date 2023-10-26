@@ -25,3 +25,8 @@ class Univers:
     def generate_description(self):
         # Générer avec OpenAI
         self.description = f"Description de l'univers {self.name} générée par OpenAI"
+    
+    
+    def generate_new_description(self,new_name):
+        # Générer avec OpenAI
+        self.new_description = f"Description de l'univers {new_name} générée par OpenAI"
