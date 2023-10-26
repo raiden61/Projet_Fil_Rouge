@@ -11,7 +11,7 @@ class Users:
         return {
             'id': self.id,
             'username': self.username,
-            'password': self.password,
+            #'password': self.password,
             'mail': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name
