@@ -6,6 +6,7 @@ from controllers.personnages import Personnages_Controller
 from controllers.users import users_Controller
 from controllers.auth import auth_Controller
 from controllers.conversation import Conversation_Controller
+from controllers.messages import message_controller
 
 # Création de l'application Flask
 app = Flask(__name__)
@@ -41,6 +42,7 @@ class Test(Univers_Controller):
     def handle_personnages(univers):
         return Personnages_Controller.PersonnagesMethod(univers)
     
+    #changer cette route pour metre les info des peso et de l'univers dans le body de postman
     @app.route('/univers/<string:univers>/personnages/<string:perso>', methods=['GET', 'PUT', 'DELETE'])
     def handle_personnagesSpecifique(univers, perso):
         return Personnages_Controller.PersonnagesMethodSpecifique(univers, perso)
@@ -50,3 +52,12 @@ class Test(Univers_Controller):
     def handle_conversation():
         return Conversation_Controller.ConversationMethod()
     
+    @app.route('/conversation/<string:personnageConversation>', methods=['GET', 'DELETE'])
+    def handle_conversationSpecifique(personnageConversation):
+        return Conversation_Controller.ConversationMethodSpecifique(personnageConversation)
+    
+
+    # Définition des routes pour les messages
+    @app.route('/conversation/<string:personnageConversation>/messages', methods=['GET', 'POST'])
+    def handle_messages(personnageConversation):
+        return message_controller.MessageMethod(personnageConversation)

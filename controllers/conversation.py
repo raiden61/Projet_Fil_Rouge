@@ -60,20 +60,6 @@ class Conversation_Controller():
                     cursor.close()
                     conn.close()
 
-                    """ cursor.execute("SELECT * FROM conversations")
-                    rows = cursor.fetchall()
-                    conversations = []
-                    for row in rows:
-                        conversation_temp = Conversations.from_map({'id': row[0], 'user_id': row[1], 'personnage_name': row[2], 'creation_date': row[3]})
-                        conversations.append(conversation_temp.to_map())
-                    return jsonify(conversations), 200
-                except Exception as e:
-                    return jsonify({'error': str(e)}), 500
-                finally:
-                    cursor.close()
-                    conn.close() """
-
-
             elif request.method == "POST":
                 data = request.json
                 conversation = Conversations.from_map(data)
@@ -96,6 +82,68 @@ class Conversation_Controller():
                                        VALUES (%s, %s, %s)""", (user_id[0], personnage_select_id[0], formatted_datetime,))
                         conn.commit()
                         return jsonify({'success': f'Conversation entre {user["username"]} et {data["nameOfPerso"]} créée '}), 200
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+                finally:
+                    cursor.close()
+                    conn.close()
+
+    def ConversationMethodSpecifique(personnageConversation):
+        # Create a database connection and cursor
+        conn, cursor = get_database_cursor()
+        verify_token(request.headers.get('Token'))
+        if verify_token(request.headers.get('Token')) == 404:
+            return jsonify({'error': 'Token invalide'}), 404
+        elif verify_token(request.headers.get('Token')) == 505:
+            return jsonify({'error': 'Token expiré'}), 505
+        else:
+            user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
+            cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
+            user_id = cursor.fetchone()
+
+            if request.method == "GET":
+                try:
+                    cursor.execute("""
+            SELECT conversations.id, users.username, personnages.name, conversations.creation_date
+            FROM conversations
+            INNER JOIN users ON conversations.user_id = users.id
+            INNER JOIN personnages ON conversations.personnage_id = personnages.id
+            WHERE conversations.user_id = %s AND personnages.name = %s
+        """, (user_id[0],personnageConversation,))
+                    row = cursor.fetchone()
+                    if row is None:
+                        return jsonify({'error': 'Cette conversation n\'existe pas'}), 404
+                    else:
+                        conversation = Conversations.from_map({
+                            'id': row[0],
+                            'username': row[1],
+                            'personnage_name': row[2],
+                            'creation_date': row[3]
+                        })
+                        return jsonify(conversation.to_map()), 200
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
+                finally:
+                    cursor.close()
+                    conn.close()
+
+            elif request.method == "DELETE":
+                try:
+                    cursor.execute("""
+            SELECT conversations.id, users.username, personnages.name, conversations.creation_date
+            FROM conversations
+            INNER JOIN users ON conversations.user_id = users.id
+            INNER JOIN personnages ON conversations.personnage_id = personnages.id
+            WHERE conversations.user_id = %s AND personnages.name = %s
+        """, (user_id[0],personnageConversation,))
+                    row = cursor.fetchone()
+                    if row is None:
+                        return jsonify({'error': 'Cette conversation n\'existe pas'}), 404
+                    
+                    else:
+                        cursor.execute("DELETE FROM conversations WHERE conversations.id = %s", (row[0],))
+                        conn.commit()
+                        return jsonify({'success': f'Conversation entre {user["username"]} et {personnageConversation} supprimée '}), 200
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
                 finally:
