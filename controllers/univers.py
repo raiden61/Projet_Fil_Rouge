@@ -3,23 +3,15 @@ from flask import Flask, request, jsonify # pip install flask
 import mysql.connector # pip install mysql-connector-python
 from dotenv import load_dotenv  # Ajout de cette ligne
 from classes.universes import Univers
-from classes.verifToken import verify_token
+from middleware.verifToken import verify_token
 import jwt
 import os
+from database import get_database_cursor
 
 load_dotenv()
 secret_key = os.getenv("SECRET_KEY")
 
-# Connectez-vous à la base de données
-def get_database_cursor():
-    conn = mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
-    )
-    cursor = conn.cursor()
-    return conn, cursor
+
 
 class Univers_Controller():
     # Définition des routes pour les univers
@@ -61,7 +53,8 @@ class Univers_Controller():
                     if row is not None:
                         return jsonify({'error': 'L\'univers existe déjà.'}), 409
                     else:
-                        cursor.execute("INSERT INTO univers (name, description, user_id) VALUES (%s, %s, %s)", (data['name'], universe.description, user_id[0],)) # Insert the universe name into the database
+                        cursor.execute("""INSERT INTO univers (name, description, user_id) 
+                                       VALUES (%s, %s, %s)""", (data['name'], universe.description, user_id[0],)) # Insert the universe name into the database
                         conn.commit() # Commit the changes to the database
                         return jsonify({'message': f'Univers {data["name"]} créé avec succès!  {user["username"]} id : {user_id[0]}'}), 201
                 except Exception as e:
@@ -82,7 +75,6 @@ class Univers_Controller():
             user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
             cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
             user_id = cursor.fetchone()
-
             if request.method == 'GET':
                 try:
                     cursor.execute("SELECT * FROM univers WHERE name = %s AND user_id = %s", (univers, user_id[0],))
@@ -113,7 +105,8 @@ class Univers_Controller():
                         # Aucun résultat trouvé pour cet univers
                         return jsonify({'error': 'L\'univers n\'existe pas.'}), 404
                     else:
-                        cursor.execute("UPDATE univers SET name = %s, description = %s WHERE id = %s AND user_id = %s", (data['new_name'], univers_2.new_description, universSelect_id[0], user_id[0],))
+                        cursor.execute("""UPDATE univers SET name = %s, description = %s 
+                                       WHERE id = %s AND user_id = %s""", (data['new_name'], univers_2.new_description, universSelect_id[0], user_id[0],))
                         conn.commit()
                         return jsonify({"message": f"Modification de l'univers {univers} en {data['new_name']}"}), 200
                 except Exception as e:
@@ -136,10 +129,8 @@ class Univers_Controller():
                         return jsonify({"error": 'Cet univers n\'existe pas.'}), 404
                     else:
                         return jsonify({"error": 'Cet univers n\'a pas été supprimé de votre compte.'}), 505
-
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
-
                 finally:
                     cursor.close()
                     conn.close()

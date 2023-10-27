@@ -5,6 +5,7 @@ from controllers.univers import Univers_Controller
 from controllers.personnages import Personnages_Controller
 from controllers.users import users_Controller
 from controllers.auth import auth_Controller
+from controllers.conversation import Conversation_Controller
 
 # Création de l'application Flask
 app = Flask(__name__)
@@ -43,4 +44,9 @@ class Test(Univers_Controller):
     @app.route('/univers/<string:univers>/personnages/<string:perso>', methods=['GET', 'PUT', 'DELETE'])
     def handle_personnagesSpecifique(univers, perso):
         return Personnages_Controller.PersonnagesMethodSpecifique(univers, perso)
+    
+    # Définition des routes pour les conversations
+    @app.route('/conversation', methods=['GET', 'POST'])
+    def handle_conversation():
+        return Conversation_Controller.ConversationMethod()
     

@@ -3,23 +3,15 @@ from flask import Flask, request, jsonify # pip install flask
 import mysql.connector # pip install mysql-connector-python
 from dotenv import load_dotenv  # Ajout de cette ligne
 from classes.userses import Users
-from classes.verifToken import verify_token
+from middleware.verifToken import verify_token
 import os
 import bcrypt
+from database import get_database_cursor
 
 load_dotenv()
 
 
-# Connectez-vous à la base de données
-def get_database_cursor():
-    conn = mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
-    )
-    cursor = conn.cursor()
-    return conn, cursor
+
 
 class users_Controller():
     def user_Method():
