@@ -14,7 +14,6 @@ secret_key = os.getenv("SECRET_KEY")
 
 class message_controller():
     def MessageMethod(personnageConversation):
-        conn, cursor = get_database_cursor()
         # Create a database connection and cursor
         conn, cursor = get_database_cursor()
         verify_token(request.headers.get('Token'))
@@ -99,5 +98,24 @@ class message_controller():
                 finally:
                     cursor.close()
                     conn.close()
+
+
+    def MessageMethodSpecifique(personnageConversation):
+        conn, cursor = get_database_cursor()
+        verify_token(request.headers.get('Token'))
+        if verify_token(request.headers.get('Token')) == 404:
+            return jsonify({'error': 'Token invalide'}), 404
+        elif verify_token(request.headers.get('Token')) == 505:
+            return jsonify({'error': 'Token expiré'}), 505
+        else:
+            user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
+            cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
+            user_id = cursor.fetchone()
+
+
+        if request.method == 'PUT':
+            data = request.get_json()
+            message = Message.from_map(data)
+            # à faire
 
 

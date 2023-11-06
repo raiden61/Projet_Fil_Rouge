@@ -38,15 +38,11 @@ class Test(Univers_Controller):
     
 
     # Définition des routes pour les personnages
-    @app.route('/univers/<string:univers>/personnages', methods=['GET', 'POST'])
+    @app.route('/univers/<string:univers>/personnages', methods=['GET', 'POST', 'PUT',  'DELETE'])
     def handle_personnages(univers):
         return Personnages_Controller.PersonnagesMethod(univers)
     
-    #changer cette route pour metre les info des peso et de l'univers dans le body de postman
-    @app.route('/univers/<string:univers>/personnages/<string:perso>', methods=['GET', 'PUT', 'DELETE'])
-    def handle_personnagesSpecifique(univers, perso):
-        return Personnages_Controller.PersonnagesMethodSpecifique(univers, perso)
-    
+
     # Définition des routes pour les conversations
     @app.route('/conversation', methods=['GET', 'POST'])
     def handle_conversation():
@@ -61,3 +57,7 @@ class Test(Univers_Controller):
     @app.route('/conversation/<string:personnageConversation>/messages', methods=['GET', 'POST'])
     def handle_messages(personnageConversation):
         return message_controller.MessageMethod(personnageConversation)
+    
+    @app.route('/conversation/<string:personnageConversation>', methods=['PUT'])
+    def handle_messagesSpecifique(personnageConversation):
+        return message_controller.MessageMethodSpecifique(personnageConversation)
