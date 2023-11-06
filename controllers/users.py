@@ -6,7 +6,9 @@ from classes.userses import Users
 from middleware.verifToken import verify_token
 import os
 import bcrypt
-from database import get_database_cursor
+#from database import get_database_cursor
+from database import db_singleton
+
 
 load_dotenv()
 
@@ -15,7 +17,8 @@ load_dotenv()
 
 class users_Controller():
     def user_Method():
-        conn, cursor = get_database_cursor()
+        # Create a database connection and cursor
+        conn, cursor = db_singleton.get_cursor()
 
         if request.method == 'GET':
             verify_token(request.headers.get('Token'))
@@ -70,7 +73,8 @@ class users_Controller():
     
     def user_MethodSpecifique(users):
         # Create a database connection and cursor
-        conn, cursor = get_database_cursor()
+        conn, cursor = db_singleton.get_cursor()
+
         verify_token(request.headers.get('Token'))
         if verify_token(request.headers.get('Token')) == 404:
             return jsonify({'error': 'Token invalide'}), 404
@@ -91,6 +95,7 @@ class users_Controller():
                 finally:
                     cursor.close()
                     conn.close()
+
             elif request.method == 'PUT':
                 try:
                     data = request.get_json()

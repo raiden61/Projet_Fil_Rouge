@@ -9,7 +9,7 @@ import bcrypt
 import jwt
 from datetime import datetime, timedelta
 from middleware.verifToken import verify_token
-from database import get_database_cursor
+from database import db_singleton
 
 load_dotenv()
 
@@ -20,7 +20,7 @@ secret_key = os.getenv("SECRET_KEY")
 class auth_Controller():
 
     def auth_method():
-        conn, cursor = get_database_cursor()
+        conn, cursor = db_singleton.get_cursor()
         if request.method == "POST":
             try: 
                 data = request.get_json()

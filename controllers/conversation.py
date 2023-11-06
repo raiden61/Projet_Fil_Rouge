@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify # pip install flask
-import mysql.connector # pip install mysql-connector-python
 from dotenv import load_dotenv  # Ajout de cette ligne
 from classes.conversationses import Conversations
 from middleware.verifToken import verify_token
 from datetime import datetime
 import jwt
 import os
-from database import get_database_cursor
+from database import db_singleton
 from classes.personnageses import Personnage
 from classes.userses import Users
 
@@ -17,7 +16,8 @@ secret_key = os.getenv("SECRET_KEY")
 class Conversation_Controller():
     def ConversationMethod():
         # Create a database connection and cursor
-        conn, cursor = get_database_cursor()
+        conn, cursor = db_singleton.get_cursor()
+
         verify_token(request.headers.get('Token'))
         if verify_token(request.headers.get('Token')) == 404:
             return jsonify({'error': 'Token invalide'}), 404
@@ -90,7 +90,8 @@ class Conversation_Controller():
 
     def ConversationMethodSpecifique(personnageConversation):
         # Create a database connection and cursor
-        conn, cursor = get_database_cursor()
+        conn, cursor = db_singleton.get_cursor()
+
         verify_token(request.headers.get('Token'))
         if verify_token(request.headers.get('Token')) == 404:
             return jsonify({'error': 'Token invalide'}), 404

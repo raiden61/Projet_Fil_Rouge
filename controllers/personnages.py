@@ -8,7 +8,7 @@ from classes.universes import Univers
 from middleware.verifToken import verify_token
 import os
 import jwt
-from database import get_database_cursor
+from database import db_singleton
 
 load_dotenv()
 secret_key = os.getenv("SECRET_KEY")
@@ -19,7 +19,7 @@ class Personnages_Controller(Univers_Controller):
     # Définition des routes pour les personnages
     def PersonnagesMethod(univers):
         # Create a database connection and cursor
-        conn, cursor = get_database_cursor()
+        conn, cursor = db_singleton.get_cursor()
         verify_token(request.headers.get('Token'))
         if verify_token(request.headers.get('Token')) == 404:
             return jsonify({'error': 'Token invalide'}), 404

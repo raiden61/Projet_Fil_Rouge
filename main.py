@@ -1,6 +1,5 @@
 # Description: This file contains the code for the Flask application.
 from flask import Flask, request, jsonify # pip install flask
-import mysql.connector # pip install mysql-connector-python
 from controllers.univers import Univers_Controller
 from controllers.personnages import Personnages_Controller
 from controllers.users import users_Controller
@@ -10,6 +9,7 @@ from controllers.messages import message_controller
 
 # Création de l'application Flask
 app = Flask(__name__)
+
 class Test(Univers_Controller):
 
     # Définition des routes pour l'authentification
@@ -61,3 +61,4 @@ class Test(Univers_Controller):
     @app.route('/conversation/<string:personnageConversation>', methods=['PUT'])
     def handle_messagesSpecifique(personnageConversation):
         return message_controller.MessageMethodSpecifique(personnageConversation)
+
