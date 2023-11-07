@@ -59,7 +59,7 @@ class Personnages_Controller(Univers_Controller):
             elif request.method == 'POST':
                 data = request.json
                 personnage = Personnage.from_map(data)
-                personnage.generate_description()
+                personnage.generate_descriptionOfPersonnage(univers)
                 try: 
                     # Get the universe ID from the database
                     cursor.execute("SELECT id FROM univers WHERE name = %s AND user_id = %s", (univers,user_id[0],))
@@ -70,7 +70,7 @@ class Personnages_Controller(Univers_Controller):
                         return jsonify({'error': 'L\'univers n\'existe pas'}), 404
                     # Get all the personnages from the database using JOIN
                     cursor.execute("""INSERT INTO personnages (name, description, univers_id, user_id) 
-                                   VALUES (%s, %s, %s, %s)""", (data['name'], personnage.description, univers_select_id[0],user_id[0],)) # Insert the personnage name into the database
+                                   VALUES (%s, %s, %s, %s)""", (data['name'], personnage.descriptionOfPersonnage, univers_select_id[0],user_id[0],)) # Insert the personnage name into the database
                     conn.commit() 
                     return jsonify({'message': f'Personnage {data["name"]} dans l\'univers {univers}({univers_select_id[0]}) créé avec succès! {user["username"]} id : {user_id[0]}'}), 201
                 except Exception as e:
@@ -82,7 +82,7 @@ class Personnages_Controller(Univers_Controller):
             elif request.method == 'PUT':
                 data = request.json
                 personnage = Personnage.from_map(data)
-                personnage.generate_new_description(data['new_name'])
+                personnage.generate_new_descriptionOfPersonnage(data['new_name'], univers)
                 try:
                     cursor.execute("SELECT id FROM univers WHERE name = %s AND user_id = %s", (univers,user_id[0],))
                     universSelect_id = cursor.fetchone() # Fetch the first row and get the first column
@@ -92,7 +92,7 @@ class Personnages_Controller(Univers_Controller):
                     cursor.execute("SELECT id FROM personnages WHERE name = %s AND univers_id = %s AND user_id = %s", (data['name'], universSelect_id[0],user_id[0],))# Get the personnage ID from the database
                     personnage_id = cursor.fetchone() # Fetch the first row
                     if personnage_id is not None and isinstance(personnage_id, tuple):
-                        cursor.execute("UPDATE personnages SET name = %s, description = %s WHERE id = %s", (data['new_name'], personnage.new_description, personnage_id[0],))
+                        cursor.execute("UPDATE personnages SET name = %s, description = %s WHERE id = %s", (data['new_name'], personnage.new_descriptionOfPersonnage, personnage_id[0],))
                         conn.commit()
                         #personnage.generate_description()
                         return jsonify({"message": f'Nom et Description du personnage "{data["name"]}" mis à jour avec succès! Nouveau Nom: "{data["new_name"]}", Nouvelle description : "{personnage.new_description}"'}), 200

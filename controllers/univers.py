@@ -57,7 +57,7 @@ class Univers_Controller():
                         cursor.execute("""INSERT INTO univers (name, description, user_id) 
                                        VALUES (%s, %s, %s)""", (data['name'], universe.description, user_id[0],)) # Insert the universe name into the database
                         conn.commit() # Commit the changes to the database
-                        return jsonify({'message': f'Univers {data["name"]} créé avec succès!  {user["username"]} id : {user_id[0]}'}), 201
+                        return jsonify({'message': f'Univers {data["name"]} créé avec succès!  {user["username"]} id : {user_id[0]} avec la description suivante : {universe.description}'}), 201
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
                 finally:
@@ -109,7 +109,7 @@ class Univers_Controller():
                         cursor.execute("""UPDATE univers SET name = %s, description = %s 
                                        WHERE id = %s AND user_id = %s""", (data['new_name'], univers_2.new_description, universSelect_id[0], user_id[0],))
                         conn.commit()
-                        return jsonify({"message": f"Modification de l'univers {univers} en {data['new_name']}"}), 200
+                        return jsonify({"message": f"Modification de l'univers {univers} en {data['new_name']} avec la description suivante : {univers_2.new_description}"}), 200
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
                 finally:

@@ -1,9 +1,15 @@
 import os
 import openai
-import re
+from flask import jsonify
+
+from filterSpecialCaracters import filter_special_characters
+from IA.generatePicture import generate_picture_univers
+
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 my_engine = os.getenv("OPENAI_ENGINE")
+
+
 
 class Univers:
     def __init__(self, name):
@@ -30,20 +36,23 @@ class Univers:
         return universe
 
     def generate_description(self):
+        #return jsonify({'key ia picture:',ia_picture_key})
         # Générer avec OpenAI
         # Utiliser OpenAI pour générer une description d'un univers
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
             prompt=f"Give me an English description of the {self.name} universe.", 
-            max_tokens=150,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
+            max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
         )
-        self.reponse = response.choices[0].text.strip()
+        reponse = response.choices[0].text.strip()
 
-        filtered_text = self.filter_special_characters(self.reponse)
+        filtered_text = filter_special_characters(reponse)
         
         self.description = filtered_text
+
+        generate_picture_univers(self, self.name, self.description)
 
         return self.description
 
@@ -55,13 +64,13 @@ class Univers:
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
             prompt=f"Give me an English description of the {new_name} universe.", 
-            max_tokens=150,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
+            max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
         )
-        self.reponse = response.choices[0].text.strip()
+        reponse = response.choices[0].text.strip()
 
-        filtered_text = self.filter_special_characters(self.reponse)
+        filtered_text = filter_special_characters(reponse)
         
         self.new_description = filtered_text
         
@@ -69,7 +78,6 @@ class Univers:
     
         #self.new_description = f"Description de l'univers {new_name} générée par OpenAI"
 
-    def filter_special_characters(self, text):
-        # Utiliser une expression régulière pour ne garder que les caractères alphabétiques et les espaces
-        filtered_text = re.sub(r'[^a-zA-Z\s]', '', text)
-        return filtered_text
+
+
+    
