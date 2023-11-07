@@ -1,16 +1,20 @@
 # Description: This file contains the code for the Flask application.
 from flask import Flask, request, jsonify # pip install flask
-from controllers.univers import Univers_Controller
 from controllers.personnages import Personnages_Controller
 from controllers.users import users_Controller
 from controllers.auth import auth_Controller
 from controllers.conversation import Conversation_Controller
 from controllers.messages import message_controller
 
+from controllers.factory import ControllerFactory
+
+# Utilisation de la Factory
+controller_factory = ControllerFactory()
+
 # Création de l'application Flask
 app = Flask(__name__)
 
-class Test(Univers_Controller):
+class Test():
 
     # Définition des routes pour l'authentification
     @app.route('/auth', methods=['POST'])
@@ -30,17 +34,24 @@ class Test(Univers_Controller):
     # Définition des routes pour les univers
     @app.route('/univers', methods=['GET', 'POST'])
     def handle_univers():
-        return Univers_Controller.universMethod()
+        #return Univers_Controller.universMethod()
+        univers_controller = controller_factory.create_controller('univers')
+        return univers_controller.universMethod()
     
     @app.route('/univers/<string:univers>', methods=['GET', 'PUT', 'DELETE'])
     def handle_universSpecifique(univers):
-        return Univers_Controller.universMethodSpecifique(univers)
+        #return Univers_Controller.universMethodSpecifique(univers)
+        univers_controller = controller_factory.create_controller('univers')
+        return univers_controller.universMethodSpecifique(univers)
     
 
     # Définition des routes pour les personnages
     @app.route('/univers/<string:univers>/personnages', methods=['GET', 'POST', 'PUT',  'DELETE'])
     def handle_personnages(univers):
-        return Personnages_Controller.PersonnagesMethod(univers)
+        #return Personnages_Controller.PersonnagesMethod(univers)
+        personnages_controller = controller_factory.create_controller('personnages')
+        return personnages_controller.PersonnagesMethod(univers)
+        
     
 
     # Définition des routes pour les conversations

@@ -16,6 +16,7 @@ secret_key = os.getenv("SECRET_KEY")
 
 class Univers_Controller():
     # Définition des routes pour les univers
+    @staticmethod
     def universMethod():
         # Create a database connection and cursor
         conn, cursor = db_singleton.get_cursor()
@@ -63,7 +64,7 @@ class Univers_Controller():
                 finally:
                     cursor.close()
                     conn.close()
-        
+    @staticmethod
     def universMethodSpecifique(univers):
         # Create a database connection and cursor
         conn, cursor = db_singleton.get_cursor()

@@ -1,6 +1,7 @@
 import os
 import openai
-import re
+from filterSpecialCaracters import filter_special_characters
+from IA.generatePicture import generate_picture_univers
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 my_engine = os.getenv("OPENAI_ENGINE")
@@ -9,7 +10,7 @@ class Personnage:
     def __init__(self, name):
         self.id = None
         self.name = name
-        self.description = None
+        self.descriptionOfPersonnage = None
         self.univers_id = None
         self.user_id = None
 
@@ -17,7 +18,7 @@ class Personnage:
         return {
             'id': self.id,
             'name': self.name,
-            #'description': self.description
+            #'description': self.descriptionOfPersonnage
             'univers_id': self.univers_id,
             'user_id': self.user_id,
         }
@@ -37,18 +38,23 @@ class Personnage:
         # Utiliser OpenAI pour générer une description d'un univers
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
-            prompt=f"Give me an English description of the {self.name} character from the {univers} universe.", 
+            prompt = f"Provide me with a description of the character {self.name} from the universe {univers}. Share their history, personality, and specific traits with me.",
+            #prompt=f"Give me an English description of the {self.name} character from the {univers} universe.", 
             max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
         )
-        self.reponse = response.choices[0].text.strip()
+        reponse = response.choices[0].text.strip()
 
-        filtered_text = self.filter_special_characters(self.reponse)
+        filtered_text = filter_special_characters(reponse)
         
         self.descriptionOfPersonnage = filtered_text
+
+        isDescription = 2
+
+        generate_picture_univers(self, self.name, self.descriptionOfPersonnage, isDescription, univers)
         
-        return self.descriptionOfPersonnage
+        #return self.descriptionOfPersonnage
     
         #self.description = f"Description du personnage {self.name} générée par OpenAI"
 
@@ -57,22 +63,17 @@ class Personnage:
         # Utiliser OpenAI pour générer une description d'un univers
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
-            prompt=f"Give me an English description of the {new_name} character from the {univers} universe.", 
+            prompt=f"Provide me with a description of the character {new_name} from the universe {univers}. Share their history, personality, and specific traits with me.", 
             max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
         )
-        self.reponse = response.choices[0].text.strip()
+        reponse = response.choices[0].text.strip()
 
-        filtered_text = self.filter_special_characters(self.reponse)
+        filtered_text = filter_special_characters(reponse)
         
         self.new_descriptionOfPersonnage = filtered_text
         
         return self.new_descriptionOfPersonnage
     
         #self.new_descriptionOfPersonnage = f"Description du personnage {new_name} générée par OpenAI"
-
-    def filter_special_characters(self, text):
-            # Utiliser une expression régulière pour ne garder que les caractères alphabétiques et les espaces
-            filtered_text = re.sub(r'[^a-zA-Z\s]', '', text)
-            return filtered_text

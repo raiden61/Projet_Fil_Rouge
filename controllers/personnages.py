@@ -17,6 +17,7 @@ secret_key = os.getenv("SECRET_KEY")
 
 class Personnages_Controller(Univers_Controller):
     # Définition des routes pour les personnages
+    @staticmethod
     def PersonnagesMethod(univers):
         # Create a database connection and cursor
         conn, cursor = db_singleton.get_cursor()

@@ -57,7 +57,9 @@ class Univers:
         
         self.description = filtered_text
 
-        generate_picture_univers(self, self.name, self.description)
+        isDescription = 1
+
+        generate_picture_univers(self, self.name, self.description, isDescription, None)
 
         return self.description
 
@@ -68,7 +70,7 @@ class Univers:
         # Utiliser OpenAI pour générer une description d'un univers
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
-            prompt=f"Give me an English description of the {new_name} universe.", 
+            prompt=f"Give me a description of the universe of {new_name}. Its era, its history, and its specificities.", 
             max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
