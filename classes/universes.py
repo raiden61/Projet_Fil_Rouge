@@ -35,13 +35,18 @@ class Univers:
 
         return universe
 
+
     def generate_description(self):
         #return jsonify({'key ia picture:',ia_picture_key})
         # Générer avec OpenAI
         # Utiliser OpenAI pour générer une description d'un univers
         response = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
-            prompt=f"Give me an English description of the {self.name} universe.", 
+
+            prompt = f"Give me a description of the universe of {self.name}. Its era, its history, and its specificities.",
+
+            #prompt=f"Give me an English description of the {self.name} universe.", 
+
             max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération

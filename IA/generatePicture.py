@@ -11,7 +11,8 @@ def generate_picture_univers(self, name, description):
         # Get the picture from the IA
         response_pictures = openai.Completion.create(
             engine= my_engine, # Choisir le moteur de génération de texte
-            prompt=f"Generate an English prompt for Stable Diffusion, with a maximum length of 300 characters, to create a background image for the {name} universe, the description of which is as follows: {description}", 
+            prompt = f"Here is the description of the {name} universe: {description} \n\n Write a prompt to generate an image using the Text-to-image artificial intelligence named StableDiffusion to represent the {name} universe. The prompt should be in English and not exceed 300 characters."
+            #prompt=f"Generate an English prompt for Stable Diffusion, with a maximum length of 300 characters, to create a background image for the {name} universe, the description of which is as follows: {description}", 
             max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
             n=1,  # Nombre de réponses à générer
             stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
@@ -30,7 +31,7 @@ def generate_picture_univers(self, name, description):
         )
         if (r.ok):
             # r.content contains the bytes of the returned image
-            with open(f'IA/Pictures/univers/{self.name}.jpg', 'wb') as f:
+            with open(f'IA/Pictures/univers/{name}.jpg', 'wb') as f:
                 f.write(r.content)
 
         else:
