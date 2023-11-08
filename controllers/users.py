@@ -6,15 +6,42 @@ from classes.userses import Users
 from middleware.verifToken import verify_token
 import os
 import bcrypt
+
 #from database import get_database_cursor
 from database import db_singleton
 
 
 load_dotenv()
 
+# Création de l'application Flask
+from .usersStrategy import GetAllUsersStrategy, GetSingleUserStrategy, CreateUserStrategy, UpdateUserStrategy
+
+class users_Controller():
+    def __init__(self, strategy=None):
+        self.strategy = strategy
+
+    def user_Method(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.strategy = GetAllUsersStrategy()
+        elif request.method == 'POST':
+            self.strategy = CreateUserStrategy()
+
+        # Autres conditions pour d'autres méthodes HTTP
+
+        return self.strategy.handle(request, *args, **kwargs)
+
+    def user_MethodSpecifique(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            self.strategy = GetSingleUserStrategy()
+        elif request.method == 'PUT':
+            self.strategy = UpdateUserStrategy()
+
+        # Autres conditions pour d'autres méthodes HTTP
+
+        return self.strategy.handle(request, *args, **kwargs)
 
 
-
+""" 
 class users_Controller():
     def user_Method():
         # Create a database connection and cursor
@@ -109,5 +136,5 @@ class users_Controller():
                     cursor.close()
                     conn.close()
 
-
+ """
                 

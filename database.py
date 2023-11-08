@@ -1,6 +1,7 @@
 import mysql.connector
 import os
 from flask import jsonify # pip install flask
+import csv
 
 # Nouveau code avec singleton
 class DatabaseSingleton:
@@ -35,8 +36,21 @@ class DatabaseSingleton:
                 return jsonify("Erreur de connexion à la base de données.")
         except Exception as e:
             return jsonify(f"Erreur lors de la connexion à la base de données : {str(e)}")
+        
 # Utilisez cette instance unique pour la connexion à la base de données
 db_singleton = DatabaseSingleton()
 
+""" class DatabaseToCSVAdapter:
+    def __init__(self, database):
+        self.database = database
 
+    def execute_query_and_export_to_csv(self, query, query_params, csv_file_path):
+        conn, cursor = self.database.get_cursor()
+        cursor.execute(query, query_params)
+        rows = cursor.fetchall()
+
+        with open(csv_file_path, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+ """
 

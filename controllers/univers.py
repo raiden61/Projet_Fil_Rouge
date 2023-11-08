@@ -7,12 +7,10 @@ from middleware.verifToken import verify_token
 import jwt
 import os
 from database import db_singleton
+#from database import DatabaseToCSVAdapter
 
 load_dotenv()
 secret_key = os.getenv("SECRET_KEY")
-
-
-
 
 class Univers_Controller():
     # Définition des routes pour les univers
@@ -29,11 +27,12 @@ class Univers_Controller():
             user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
             cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
             user_id = cursor.fetchone()
-
             if request.method == 'GET':
                 try:
                     cursor.execute("SELECT * FROM univers WHERE user_id = %s", (user_id[0],))
                     rows = cursor.fetchall()
+                    #adapter = DatabaseToCSVAdapter(db_singleton)
+                    #adapter.execute_query_and_export_to_csv("SELECT * FROM univers WHERE user_id = %s", (user_id[0],), "csv/univers.csv")
                     universes = []
                     for row in rows:
                         universe_temp = Univers.from_map({'id': row[0], 'name': row[1], 'description': row[2], 'user_id': row[3]})
