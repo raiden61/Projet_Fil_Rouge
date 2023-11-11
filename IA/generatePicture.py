@@ -9,6 +9,11 @@ ia_picture_key = os.getenv("PICTURE_API_KEY")
 
 
 def generate_picture_univers(self, name, description, isDescription, univers):
+        # Vérifier si le fichier image existe déjà
+        if isDescription == 1 and os.path.exists(f'IA/Pictures/univers/{name}.jpg'):
+            return jsonify({'message': 'L\'image existe déjà'}), 200
+        elif isDescription == 2 and os.path.exists(f'IA/Pictures/personnages/{name}.jpg'):
+            return jsonify({'message': 'L\'image existe déjà'}), 200
         # Get the picture from the IA
         if isDescription == 1:
             prompt = f"Here is the description of the {name} universe: {description} \n\n Write a prompt to generate an image using the Text-to-image artificial intelligence named StableDiffusion to represent the {name} universe. The prompt should be in English and not exceed 300 characters."
