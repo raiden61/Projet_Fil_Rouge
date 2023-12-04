@@ -15,6 +15,7 @@ secret_key = os.getenv("SECRET_KEY")
 
 
 
+
 class Personnages_Controller(Univers_Controller):
     # Définition des routes pour les personnages
     @staticmethod
@@ -60,7 +61,6 @@ class Personnages_Controller(Univers_Controller):
             elif request.method == 'POST':
                 data = request.json
                 personnage = Personnage.from_map(data)
-                personnage.generate_descriptionOfPersonnage(univers)
                 try: 
                     # Get the universe ID from the database
                     cursor.execute("SELECT id FROM univers WHERE name = %s AND user_id = %s", (univers,user_id[0],))
@@ -70,10 +70,21 @@ class Personnages_Controller(Univers_Controller):
                         # Aucun résultat trouvé pour cet univers
                         return jsonify({'error': 'L\'univers n\'existe pas'}), 404
                     # Get all the personnages from the database using JOIN
-                    cursor.execute("""INSERT INTO personnages (name, description, univers_id, user_id) 
-                                   VALUES (%s, %s, %s, %s)""", (data['name'], personnage.descriptionOfPersonnage, univers_select_id[0],user_id[0],)) # Insert the personnage name into the database
-                    conn.commit() 
-                    return jsonify({'message': f'Personnage {data["name"]} dans l\'univers {univers}({univers_select_id[0]}) créé avec succès! {user["username"]} id : {user_id[0]}'}), 201
+                    cursor.execute("SELECT * FROM personnages WHERE name = %s", (data['name'],))
+                    row = cursor.fetchone()
+                    if row is not None:
+                        name_personnage = row[1]
+                        description_personnage = row[2]
+                        cursor.execute("""INSERT INTO personnages (name, description, univers_id, user_id) 
+                                     VALUES (%s, %s, %s, %s)""", (name_personnage, description_personnage, univers_select_id[0],user_id[0],))
+                        conn.commit()
+                        return jsonify({'message': f'Depuis un existant le Personnage {data["name"]} dans l\'univers {univers}({univers_select_id[0]}) a etait créé avec succès! {user["username"]} id : {user_id[0]}'}), 201
+                    else:
+                        personnage.generate_descriptionOfPersonnage(univers)
+                        cursor.execute("""INSERT INTO personnages (name, description, univers_id, user_id) 
+                                    VALUES (%s, %s, %s, %s)""", (data['name'], personnage.descriptionOfPersonnage, univers_select_id[0],user_id[0],)) # Insert the personnage name into the database
+                        conn.commit() 
+                        return jsonify({'message': f'Personnage {data["name"]} dans l\'univers {univers}({univers_select_id[0]}) créé avec succès! {user["username"]} id : {user_id[0]}'}), 201
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
                 finally:

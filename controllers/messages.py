@@ -69,35 +69,64 @@ class message_controller():
             WHERE conversations.user_id = %s AND personnages.name = %s
         """, (user_id[0],personnageConversation,))
             row = cursor.fetchone()
+            conversationID = row[0]
             cursor.execute("SELECT id FROM personnages WHERE name = %s", (personnageConversation,))
             personnage_id = cursor.fetchone()
             if row is None:
                 return jsonify({'error': 'Cette conversation n\'existe pas'}), 404
-            else:
-                try:
-                    if message.message == "":
-                        return jsonify({'error': 'Le message ne peut pas être vide'}), 404
-                    
-                    ## A change pour inclure les messages de l'IA
-                    is_human = request.headers.get('IsHuman')
-                    if is_human == "True":
-                        human = True
-                    else:
-                        human = False
+            try:
+                if message.message == "":
+                    return jsonify({'error': 'Le message ne peut pas être vide'}), 404
 
-                    # Get the current date and time
-                    current_datetime = datetime.now()
-                    # Format the datetime as a string with year, month, day, hour, and minute
-                    formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-                    cursor.execute("""INSERT INTO messages (IsHuman, conversation_id, message, sending_date, user_id, personnage_id) 
-                                   VALUES (%s, %s, %s, %s, %s, %s)""", (human, row[0], message.message, formatted_datetime, user_id[0], personnage_id[0]))
-                    message.id = cursor.lastrowid
-                    return jsonify(message.to_map()), 201
-                except Exception as e:
-                    return jsonify({'error': str(e)}), 500
-                finally:
-                    cursor.close()
-                    conn.close()
+                # Obtenir la date et l'heure actuelles
+                current_datetime = datetime.now()
+                # Formater la date et l'heure en tant que chaîne avec année, mois, jour, heure et minute
+                formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                
+                cursor.execute("""INSERT INTO messages (IsHuman, conversation_id, message, sending_date, user_id, personnage_id) 
+                                VALUES (%s, %s, %s, %s, %s, %s)""", (True, conversationID, message.message, formatted_datetime, user_id[0], personnage_id[0]))
+                message.id = cursor.lastrowid
+                conn.commit()
+
+               # Générer avec OpenAI
+                cursor.execute("""SELECT p.univers_id
+                            FROM personnages p
+                            INNER JOIN users us on p.user_id = us.id
+                            WHERE p.name = %s AND us.id = %s
+                       """, (personnageConversation, user_id))
+                univers_id = cursor.fetchall()
+                if univers_id is None:
+                    return jsonify({'error': 'Le personnage n\'existe pas'}), 404
+                else:
+                
+                    if univers_id:
+                        univers_id = univers_id[0]
+
+                    cursor.execute("""SELECT p.name, p.description, u.name, u.description, us.id
+                                        FROM personnages p
+                                        INNER JOIN	univers u on p.univers_id = u.id
+                                        INNER JOIN users us on u.user_id = us.id
+                                        WHERE us.id = %s AND p.name = %s AND u.id = %s
+                                        """, (user_id, personnageConversation, univers_id))
+                    row = cursor.fetchall()
+                    if row is None:
+                        return jsonify({'error': 'Le personnage n\'existe pas'}), 404
+                    else:
+                        for row in row:
+                            personnageDescription = row[1]
+                            universDescription = row[3]
+
+                Message.generate_message(message, personnageConversation, personnageDescription, universDescription)
+                cursor.execute("""INSERT INTO messages (IsHuman, conversation_id, message, sending_date, user_id, personnage_id)
+                                VALUES (%s, %s, %s, %s, %s, %s)""", (False, conversationID, Message.response_message, formatted_datetime, user_id[0], personnage_id[0]))
+                conn.commit()
+                message.id = cursor.lastrowid
+                return jsonify({'success': f'Message envoyé message de la personne {message.message} reponse de l\'ia {Message.response_message}'}), 200
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+            finally:
+                cursor.close()
+                conn.close()
 
 
     def MessageMethodSpecifique(personnageConversation):
@@ -112,6 +141,9 @@ class message_controller():
             user = jwt.decode(request.headers.get('Token'), secret_key, algorithms=["HS256"])
             cursor.execute("SELECT id FROM users WHERE username = %s", (user['username'],))
             user_id = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
 
 
         if request.method == 'PUT':

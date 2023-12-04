@@ -47,13 +47,25 @@ class Univers_Controller():
             elif request.method == 'POST':
                 data = request.json
                 universe = Univers.from_map(data)
-                universe.generate_description()
                 try:
                     cursor.execute("SELECT * FROM univers WHERE name = %s AND user_id = %s", (data['name'], user_id[0],))
                     row = cursor.fetchone()
                     if row is not None:
                         return jsonify({'error': 'L\'univers existe déjà.'}), 409
+                    the_user_id = user_id[0]
+                    
+                    cursor.execute("SELECT * FROM univers WHERE name = %s", (data['name'],))
+                    row = cursor.fetchone()
+                    if row is not None:
+                        print("L'univers existe déjà dans la base de données")
+                        name_univers = row[1]
+                        description_univers = row[2]
+
+                        cursor.execute("""INSERT INTO univers (name, description, user_id) VALUES (%s, %s, %s)""", (name_univers, description_univers, the_user_id,))
+                        conn.commit()
+                        return jsonify({'message': f' depuis un autre user Univers {name_univers} créé avec succès!  {user["username"]} id : {user_id[0]} avec la description suivante : {description_univers}'}), 201
                     else:
+                        universe.generate_description()
                         cursor.execute("""INSERT INTO univers (name, description, user_id) 
                                        VALUES (%s, %s, %s)""", (data['name'], universe.description, user_id[0],)) # Insert the universe name into the database
                         conn.commit() # Commit the changes to the database
