@@ -107,7 +107,7 @@ class Personnages_Controller(Univers_Controller):
                         cursor.execute("UPDATE personnages SET name = %s, description = %s WHERE id = %s", (data['new_name'], personnage.new_descriptionOfPersonnage, personnage_id[0],))
                         conn.commit()
                         #personnage.generate_description()
-                        return jsonify({"message": f'Nom et Description du personnage "{data["name"]}" mis à jour avec succès! Nouveau Nom: "{data["new_name"]}", Nouvelle description : "{personnage.new_description}"'}), 200
+                        return jsonify({"message": f'Nom et Description du personnage "{data["name"]}" mis à jour avec succès! Nouveau Nom: "{data["new_name"]}", Nouvelle description : "{personnage.new_descriptionOfPersonnage}"'}), 200
                     else:
                         return jsonify({"error": f'Personnage "{data["name"]}" introuvable!'}), 404
                 except mysql.connector.errors.IntegrityError:
@@ -121,12 +121,12 @@ class Personnages_Controller(Univers_Controller):
                 data = request.json
                 personnage = Personnage.from_map(data)
                 try:
-                    cursor.execute("SELECT id FROM personnages WHERE name = %s", (data['name'],))# Get the personnage ID from the database
+                    cursor.execute("SELECT personnages.id FROM personnages INNER JOIN users on personnages.user_id = users.id WHERE name = %s AND users.id = %s", (data['name'], user_id[0]))# Get the personnage ID from the database
                     personnage_id = cursor.fetchone() # Fetch the first row
                     conn.commit()
                     if personnage_id is not None and isinstance(personnage_id, tuple):
                         personnage = Personnage.from_map({'id': personnage_id[0], 'name': data['name']})
-                        cursor.execute("DELETE FROM personnages WHERE id = %s", (personnage_id[0],))
+                        cursor.execute("DELETE FROM personnages WHERE id = %s ", (personnage_id[0],))
                         conn.commit()
                         return jsonify({"message": f'Personnage "{data["name"]}" supprimé avec succès!'}), 200
                     else:

@@ -23,13 +23,12 @@ class Message:
 
     def to_map(self):
         return {
-            'id': self.id,
             'IsHuman': self.IsHuman,
             'conversation_id': self.conversation_id,
             'message': self.message,
             'sending_date': self.sending_date,
-            'users_id': self.users_id,
-            'personnage_id': self.personnage_id
+            'users_name': self.users_id,
+            'personnage_name': self.personnage_id
             
         }
 
@@ -49,17 +48,6 @@ class Message:
     def generate_message(self, message, personnageConversation, personnageDescription, universDescription):
         # Générer avec OpenAI
         # Utiliser OpenAI pour générer un message d'un personnage
-        response = openai.Completion.create(
-            engine=my_engine,  # Choisir le moteur de génération de texte
-            prompt=f"In the context of a role-playing game, you will play the character {personnageConversation}. Here is the description: {personnageDescription} from the Marvel universe, here is the description: {universDescription} and you must respond to the following message:{message}",
-            max_tokens=200,  # Limitez le nombre de tokens pour contrôler la longueur de la réponse
-            n=1,  # Nombre de réponses à générer
-            stop=None  # Vous pouvez spécifier des mots pour arrêter la génération
-        )
-        reponse = response.choices[0].text.strip()
-
-        filtered_text = filter_special_characters(reponse)
         
-        self.response_message = filtered_text
         return self.response_message
 

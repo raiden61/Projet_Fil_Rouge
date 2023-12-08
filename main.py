@@ -84,7 +84,6 @@ class Test():
     def handle_conversationSpecifique(personnageConversation):
         return Conversation_Controller.ConversationMethodSpecifique(personnageConversation)
     
-
     # Définition des routes pour les messages
     @app.route('/conversation/<string:personnageConversation>/messages', methods=['GET', 'POST'])
     def handle_messages(personnageConversation):

@@ -19,14 +19,12 @@ class Users:
 
     @classmethod
     def from_map(cls, map):
-        user = cls(
-        map.get('username', ''),
-        map.get('password', ''),
-        map.get('email', ''),
-        map.get('first_name', ''),
-        map.get('last_name', '')
-    )
+        user = cls()
         user.id = map.get('id')
-
+        user.username = map.get('username')
+        user.password = map.get('password')
+        user.email = map.get('email')
+        user.first_name = map.get('first_name')
+        user.last_name = map.get('last_name')
 
         return user
